@@ -4,11 +4,15 @@ import com.example.iksystem.*;
 import com.example.iksystem.dto.protocol.ProtocolCreateDto;
 import com.example.iksystem.dto.protocol.ProtocolResponseDto;
 import com.example.iksystem.dto.protocol.ProtocolUpdateDto;
+import com.example.iksystem.dto.user.UserProtocolDetailDto;
+import com.example.iksystem.dto.user.UserProtocolListDto;
 import com.example.iksystem.entity.CompanyEntity;
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
+import com.example.iksystem.specification.ProtocolSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -126,5 +130,14 @@ public class ProtocolServiceImpl implements ProtocolService {
     public Page<ProtocolResponseDto> getAllProtocolsForAdmin(Pageable pageable) {
         return protocolRepository.findAll(pageable)
                 .map(this::mapToResponseDto);
+    }
+
+    @Override
+    public Page<UserProtocolListDto> getActiveProtocolsForUser(String keyword, UUID categoryId, Pageable pageable) {
+        UserProtocolDetailDto getProtocolDetailForUser(UUID id);
+
+        Specification<UserProtocolListDto> specification = Specification.where(ProtocolSpecification.isActiveAndNotExpired());
+
+
     }
 }
