@@ -9,8 +9,8 @@ import java.util.UUID;
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoriesEntity, UUID> {
 
-    public boolean existsByNameIgnoreCase(String name);
-    public boolean existsByNameIgnoreCaseAndIdNot(String name, UUID id);
+    public boolean existsByCategoryNameIgnoreCase(String categoryName);
+    public boolean existsByCategoryNameIgnoreCaseAndIdNot(String categoryName, UUID id);
 
     public List<CategoriesEntity> findAllByIsActiveTrue();
 

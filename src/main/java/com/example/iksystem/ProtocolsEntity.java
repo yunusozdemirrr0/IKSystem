@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
@@ -23,10 +24,11 @@ public class ProtocolsEntity {
     private String title;
     private Integer discountPercentage;
     @Lob
-    private String discountInfo;
+    @Column(name = "discount_info")
+    private String discountDetailsText;
     private String specialConditions;
-    private Date beginDate;
-    private Date endDate;
+    private LocalDate beginDate;
+    private LocalDate endDate;
     private boolean protocolStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,5 +38,7 @@ public class ProtocolsEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id",nullable = false)
     private CategoriesEntity category;
+
+
 
 }

@@ -1,5 +1,6 @@
 package com.example.iksystem.dto.protocol;
 
+import com.example.iksystem.ProtocolsEntity;
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -42,6 +43,8 @@ public class ProtocolCreateDto {
     private LocalDate endDate;
     @NotNull
     private ProtocolStatus status;
+
+
 }
 
 

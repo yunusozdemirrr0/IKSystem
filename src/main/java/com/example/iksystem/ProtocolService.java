@@ -13,6 +13,7 @@ public interface ProtocolService {
     ProtocolResponseDto createProtocol(ProtocolCreateDto protocolCreateDto, List<MultipartFile> files);
     ProtocolResponseDto updateProtocol(UUID id, ProtocolUpdateDto protocolUpdateDto, List<MultipartFile> files);
     void toggleProtocolStatus(UUID id);
-    Page<ProtocolsEntity> getAllProtocolsForAdmin(Pageable pageable);
+    Page<ProtocolResponseDto> getAllProtocolsForAdmin(Pageable pageable);
+
 
 }

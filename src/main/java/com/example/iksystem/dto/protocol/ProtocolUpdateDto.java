@@ -32,7 +32,7 @@ public class ProtocolUpdateDto {
     @Max(value = 100, message = "discountPercent must be less than or equal to 100")
     private Integer discountPercent;
     @NotBlank
-    private String discountInfo;
+    private String discountDetailText;
     @NotNull
     @FutureOrPresent
     private LocalDate beginDate;

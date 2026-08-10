@@ -22,7 +22,7 @@ public  class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public CategoryResponseDto createCategory(CategoryCreateDto dto) {
-        if (categoryRepository.existsByNameIgnoreCase(dto.getCategoryName())) {
+        if (categoryRepository.existsByCategoryNameIgnoreCase(dto.getCategoryName())) {
             throw new AlreadyExistsException("Category already exists!");
         }
         CategoriesEntity categoriesEntity = CategoriesEntity.builder()
@@ -87,7 +87,7 @@ public  class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponseDto updateCategory(UUID id, CategoryUpdateDto dto) {
         CategoriesEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
-        if (categoryRepository.existsByNameIgnoreCaseAndIdNot(dto.getCategoryName(), id)) {
+        if (categoryRepository.existsByCategoryNameIgnoreCaseAndIdNot(dto.getCategoryName(), id)) {
             throw new AlreadyExistsException("Category already exists!");
         }
         category.setCategoryName(dto.getCategoryName());
