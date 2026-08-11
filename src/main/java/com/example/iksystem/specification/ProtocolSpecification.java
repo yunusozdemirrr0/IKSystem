@@ -1,19 +1,20 @@
+
 package com.example.iksystem.specification;
 
 import com.example.iksystem.ProtocolsEntity;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.UUID;
 
 public class ProtocolSpecification {
     private ProtocolSpecification() {
-}
-public static Specification<ProtocolsEntity> isActiveAndNotExpired(){
+    }
+
+    public static Specification<ProtocolsEntity> isActiveAndNotExpired() {
 
         return (root, query, criteriaBuilder) -> {
             Predicate isActive = criteriaBuilder.equal(root.get("protocolStatus"), true);
@@ -22,26 +23,31 @@ public static Specification<ProtocolsEntity> isActiveAndNotExpired(){
 
         };
 
-}
+    }
 
-public static Specification<ProtocolsEntity>containsKeyword(String keyword){
+    public static Specification<ProtocolsEntity> containsKeyword(String keyword) {
 
-        return (root, query, criteriaBuilder1) -> {
-            if (!StringUtils.hasText(keyword)){
+        return (root, query, criteriaBuilder) -> {
+            if (!StringUtils.hasText(keyword)) {
                 return null;
             }
             String pattern = "%" + keyword.toLowerCase(Locale.ENGLISH) + "%";
             Predicate titleLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern);
-
-            return criteriaBuilder1.or(titleLike)
-            );
-
-        }
+            Predicate companyNameLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("company").get("name")), pattern);
+            return criteriaBuilder.or(titleLike, companyNameLike);
 
 
+        };
+    }
 
+    public static Specification<ProtocolsEntity> hasCategoryId(UUID categoryId) {
+        return (root, query, criteriaBuilder) -> {
+            if (categoryId == null) {
+                return null;
+            }
+            return criteriaBuilder.equal(root.get("category").get("id"), categoryId);
+        };
+    }
 }
 
 
-
-}

@@ -9,6 +9,7 @@ import com.example.iksystem.dto.user.UserProtocolListDto;
 import com.example.iksystem.entity.CompanyEntity;
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
 import com.example.iksystem.specification.ProtocolSpecification;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +17,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -134,10 +139,66 @@ public class ProtocolServiceImpl implements ProtocolService {
 
     @Override
     public Page<UserProtocolListDto> getActiveProtocolsForUser(String keyword, UUID categoryId, Pageable pageable) {
-        UserProtocolDetailDto getProtocolDetailForUser(UUID id);
+        Specification<ProtocolsEntity> spec = Specification.where(ProtocolSpecification.isActiveAndNotExpired())
+                .and(ProtocolSpecification.containsKeyword(keyword))
+                .and(ProtocolSpecification.hasCategoryId(categoryId));
 
-        Specification<UserProtocolListDto> specification = Specification.where(ProtocolSpecification.isActiveAndNotExpired());
+        return protocolRepository.findAll(spec, pageable)
+                .map(this::convertToUserProtocolListDto);
+
+    }
+
+    @Override
+    public UserProtocolDetailDto getProtocolDetailForUser(UUID id) {
+        ProtocolsEntity protocol = protocolRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Protocol not found with id: " + id));
+
+        if (!protocol.isProtocolStatus() || protocol.getEndDate().isBefore(LocalDate.now())) {
+            throw new ResourceNotFoundException("Protocol is not active or has expired");
+        }
+
+        return convertToUserProtocolDetailDto(protocol);
+
+    }
+    private UserProtocolListDto convertToUserProtocolListDto(ProtocolsEntity protocol) {
+        return UserProtocolListDto.builder()
+                .id(protocol.getId())
+                .title(protocol.getTitle())
+                .companyName(protocol.getCompany().getCompanyName())
+                .categoryName(protocol.getCategory().getCategoryName())
+                .discountPercent(protocol.getDiscountPercentage())
+                .logoUrl(protocol.getCompany().getLogoUrl())
+                .endDate(protocol.getEndDate())
+                .build();
+    }
+    private UserProtocolDetailDto convertToUserProtocolDetailDto(ProtocolsEntity protocol) {
+        List<String> fileDownloadUrls = Collections.emptyList();
+        if(protocol.getProtocolFiles() != null && !protocol.getProtocolFiles().isEmpty()) {
+            fileDownloadUrls = protocol.getProtocolFiles().stream()
+                    .map(file -> ServletUriComponentsBuilder.fromCurrentContextPath()
+                            .path("/api/v1/admin/files/download/")
+                            .path(file.getId().toString())
+                                    .toUriString())
+
+                            .toList();
+                }
 
 
+        return UserProtocolDetailDto.builder()
+                .id(protocol.getId())
+                .title(protocol.getTitle())
+                .companyName(protocol.getCompany().getCompanyName())
+                .categoryName(protocol.getCategory().getCategoryName())
+                .logoUrl(protocol.getCompany().getLogoUrl())
+                .discountDetailsText(protocol.getDiscountDetailsText())
+                .specialConditions(protocol.getSpecialConditions())
+                .companyPhone(protocol.getCompany().getTelephone())
+                .companyEmail(protocol.getCompany().getEmail())
+                .companyAddress(protocol.getCompany().getAddress())
+                .mapUrl(protocol.getCompany().getLatitude()+","+protocol.getCompany().getLongitude())
+                .beginDate(protocol.getBeginDate())
+                .endDate(protocol.getEndDate())
+                .fileDownloadUrls(fileDownloadUrls)
+                .build();
     }
 }
