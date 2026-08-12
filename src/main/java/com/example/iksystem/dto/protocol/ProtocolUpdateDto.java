@@ -1,6 +1,6 @@
 package com.example.iksystem.dto.protocol;
 
-import com.example.iksystem.ValideDateRange;
+import com.example.iksystem.DateRange.ValideDateRange;
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;

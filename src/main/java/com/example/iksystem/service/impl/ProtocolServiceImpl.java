@@ -1,13 +1,19 @@
 package com.example.iksystem.service.impl;
 
-import com.example.iksystem.*;
 import com.example.iksystem.dto.protocol.ProtocolCreateDto;
 import com.example.iksystem.dto.protocol.ProtocolResponseDto;
 import com.example.iksystem.dto.protocol.ProtocolUpdateDto;
 import com.example.iksystem.dto.user.UserProtocolDetailDto;
 import com.example.iksystem.dto.user.UserProtocolListDto;
+import com.example.iksystem.entity.CategoriesEntity;
 import com.example.iksystem.entity.CompanyEntity;
+import com.example.iksystem.entity.ProtocolsEntity;
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
+import com.example.iksystem.exception.ResourceNotFoundException;
+import com.example.iksystem.repository.CategoryRepository;
+import com.example.iksystem.repository.CompanyRepository;
+import com.example.iksystem.repository.ProtocolRepository;
+import com.example.iksystem.service.ProtocolService;
 import com.example.iksystem.specification.ProtocolSpecification;
 
 import lombok.RequiredArgsConstructor;
@@ -23,8 +29,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor

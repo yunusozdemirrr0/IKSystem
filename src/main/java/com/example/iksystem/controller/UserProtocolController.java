@@ -1,6 +1,6 @@
 package com.example.iksystem.controller;
 
-import com.example.iksystem.ProtocolService;
+import com.example.iksystem.service.ProtocolService;
 import com.example.iksystem.dto.user.UserProtocolDetailDto;
 import com.example.iksystem.dto.user.UserProtocolListDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,14 +20,14 @@ import java.util.UUID;
 public class UserProtocolController {
     private final ProtocolService protocolService;
 
-    @GetMapping("/api/v1/protocols")
+    @GetMapping()
     public ResponseEntity<Page<UserProtocolListDto>> getActiveProtocolsForUser(@RequestParam(required = false) String search,
                                                                                @RequestParam(required = false) UUID categoryId, Pageable pageable) {
         Page<UserProtocolListDto> protocols = protocolService.getActiveProtocolsForUser(search, categoryId, pageable);
         return ResponseEntity.ok(protocols);
     }
 
-    @GetMapping("/api/v1/protocols/{id}")
+    @GetMapping("/{id}")
     @Operation(summary = "Get protocol detail for user", description = "Retrieve the details of a specific protocol for a user by its ID.")
     public ResponseEntity<UserProtocolDetailDto> getProtocolDetailForUser(@PathVariable UUID id) {
         UserProtocolDetailDto protocol = protocolService.getProtocolDetailForUser(id);

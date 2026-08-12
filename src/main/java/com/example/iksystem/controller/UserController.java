@@ -1,6 +1,6 @@
 package com.example.iksystem.controller;
 
-import com.example.iksystem.UserService;
+import com.example.iksystem.service.UserService;
 import com.example.iksystem.dto.user.UserCreateDto;
 import com.example.iksystem.dto.user.UserResponseDto;
 import com.example.iksystem.dto.user.UserUpdateDto;

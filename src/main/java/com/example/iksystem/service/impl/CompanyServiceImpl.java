@@ -1,9 +1,9 @@
 package com.example.iksystem.service.impl;
 
-import com.example.iksystem.AlreadyExistsException;
-import com.example.iksystem.CompanyRepository;
-import com.example.iksystem.CompanyService;
-import com.example.iksystem.ResourceNotFoundException;
+import com.example.iksystem.exception.AlreadyExistsException;
+import com.example.iksystem.repository.CompanyRepository;
+import com.example.iksystem.service.CompanyService;
+import com.example.iksystem.exception.ResourceNotFoundException;
 import com.example.iksystem.dto.company.CompanyCreateDto;
 import com.example.iksystem.dto.company.CompanyResponseDto;
 import com.example.iksystem.dto.company.CompanyUpdateDto;
@@ -32,12 +32,12 @@ public class CompanyServiceImpl implements CompanyService {
         CompanyEntity companyEntity = CompanyEntity.builder()
                 .companyName(dto.getCompanyName())
                 .isActive(true)
-                .email(dto.getEmail())
-                .address(dto.getAddress())
-                .telephone(dto.getPhoneNumber())
-                .logoUrl(dto.getLogoUrl())
-                .latitude(dto.getLatitude())
-                .longitude(dto.getLongitude())
+                .email(dto.getCompanyEmail())
+                .address(dto.getCompanyAddress())
+                .telephone(dto.getCompanyPhoneNumber())
+                .logoUrl(dto.getCompanyLogoUrl())
+                .latitude(dto.getCompanyLatitude())
+                .longitude(dto.getCompanyLongitude())
 
                 .build();
         CompanyEntity savedCompany = companyRepository.save(companyEntity);

@@ -1,7 +1,5 @@
 package com.example.iksystem.dto.category;
 
-import com.example.iksystem.AlreadyExistsException;
-import com.example.iksystem.ResourceNotFoundException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -9,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

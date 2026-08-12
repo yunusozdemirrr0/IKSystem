@@ -1,6 +1,6 @@
-package com.example.iksystem;
+package com.example.iksystem.repository;
 
-import com.example.iksystem.CategoriesEntity;
+import com.example.iksystem.entity.CategoriesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

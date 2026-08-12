@@ -1,7 +1,7 @@
 
 package com.example.iksystem.specification;
 
-import com.example.iksystem.ProtocolsEntity;
+import com.example.iksystem.entity.ProtocolsEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -33,7 +33,7 @@ public class ProtocolSpecification {
             }
             String pattern = "%" + keyword.toLowerCase(Locale.ENGLISH) + "%";
             Predicate titleLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern);
-            Predicate companyNameLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("company").get("name")), pattern);
+            Predicate companyNameLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("company").get("companyName")), pattern);
             return criteriaBuilder.or(titleLike, companyNameLike);
 
 

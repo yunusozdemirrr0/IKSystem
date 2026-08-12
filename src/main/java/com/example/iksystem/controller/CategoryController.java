@@ -1,7 +1,7 @@
 package com.example.iksystem.controller;
 
 
-import com.example.iksystem.CategoryService;
+import com.example.iksystem.service.CategoryService;
 import com.example.iksystem.dto.category.CategoryCreateDto;
 import com.example.iksystem.dto.category.CategoryResponseDto;
 import com.example.iksystem.dto.category.CategoryUpdateDto;

@@ -1,4 +1,4 @@
-package com.example.iksystem;
+package com.example.iksystem.service;
 import com.example.iksystem.dto.category.CategoryCreateDto;
 import com.example.iksystem.dto.category.CategoryResponseDto;
 import com.example.iksystem.dto.category.CategoryUpdateDto;

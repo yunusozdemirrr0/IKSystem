@@ -1,5 +1,6 @@
-package com.example.iksystem;
+package com.example.iksystem.repository;
 
+import com.example.iksystem.entity.UsersEntity;
 import com.example.iksystem.enums.model.constant.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 

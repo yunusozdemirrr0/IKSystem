@@ -1,6 +1,6 @@
 package com.example.iksystem.controller;
 
-import com.example.iksystem.CompanyService;
+import com.example.iksystem.service.CompanyService;
 import com.example.iksystem.dto.company.CompanyCreateDto;
 import com.example.iksystem.dto.company.CompanyResponseDto;
 import com.example.iksystem.dto.company.CompanyUpdateDto;

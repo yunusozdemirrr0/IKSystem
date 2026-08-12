@@ -1,11 +1,15 @@
 package com.example.iksystem.service.impl;
 
-import com.example.iksystem.*;
 import com.example.iksystem.dto.user.UserCreateDto;
 import com.example.iksystem.dto.user.UserResponseDto;
 import com.example.iksystem.dto.user.UserUpdateDto;
+import com.example.iksystem.entity.UsersEntity;
 import com.example.iksystem.enums.model.constant.Role;
 
+import com.example.iksystem.exception.AlreadyExistsException;
+import com.example.iksystem.exception.ResourceNotFoundException;
+import com.example.iksystem.repository.UserRepository;
+import com.example.iksystem.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +32,7 @@ public class UserServiceImpl implements UserService {
             throw new AlreadyExistsException("User with this email already exists");
         }
         UsersEntity usersEntity = UsersEntity.builder()
-                .name_surname(dto.getName_surname())
+                .nameSurname(dto.getName_surname())
                 .email(dto.getEmail())
                 .role(dto.getRole())
                 .isActive(true)
@@ -47,7 +51,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmailIgnoreCaseAndIdNot(dto.getEmail(), id)) {
             throw new AlreadyExistsException("User with this email already exists");
         }
-        user.setName_surname(dto.getName_surname());
+        user.setNameSurname(dto.getName_surname());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
         UsersEntity updatedUser = userRepository.save(user);
@@ -82,7 +86,7 @@ public class UserServiceImpl implements UserService {
     private UserResponseDto mapToUserResponseDto(UsersEntity user) {
         return UserResponseDto.builder()
                 .id(user.getId())
-                .name_surname(user.getName_surname())
+                .name_surname(user.getNameSurname())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .isActive(user.isActive())

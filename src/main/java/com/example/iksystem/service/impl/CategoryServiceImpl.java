@@ -1,9 +1,13 @@
 package com.example.iksystem.service.impl;
 
-import com.example.iksystem.*;
 import com.example.iksystem.dto.category.CategoryCreateDto;
 import com.example.iksystem.dto.category.CategoryResponseDto;
 import com.example.iksystem.dto.category.CategoryUpdateDto;
+import com.example.iksystem.entity.CategoriesEntity;
+import com.example.iksystem.exception.AlreadyExistsException;
+import com.example.iksystem.exception.ResourceNotFoundException;
+import com.example.iksystem.repository.CategoryRepository;
+import com.example.iksystem.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

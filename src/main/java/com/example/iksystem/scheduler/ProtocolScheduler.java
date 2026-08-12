@@ -1,5 +1,7 @@
-package com.example.iksystem;
+package com.example.iksystem.scheduler;
 
+import com.example.iksystem.entity.ProtocolsEntity;
+import com.example.iksystem.repository.ProtocolRepository;
 import com.example.iksystem.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +18,7 @@ import java.util.List;
 public class ProtocolScheduler {
     private final ProtocolRepository protocolRepository;
     private final EmailService emailService;
-    @Value("${app.hr.notification-email}") private String hrEmail;
+    @Value("${app.hr.notification-email:sahte_ik@sirket.com}") private String hrEmail;
 
     @Scheduled(cron = "0 0 0 * * ?") // Runs every day at 1 AM
     public void checkProtocolExpirations() {

@@ -1,6 +1,5 @@
 package com.example.iksystem.dto.user;
 
-import com.example.iksystem.UsersEntity;
 import com.example.iksystem.enums.model.constant.Role;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.catalina.User;
 
 import java.util.UUID;
 @Data

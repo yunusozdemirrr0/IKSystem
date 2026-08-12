@@ -1,6 +1,11 @@
 package com.example.iksystem.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -11,6 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.URL;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -21,7 +27,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class CompanyEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     private UUID id;
     @NotBlank(message = "companyName cannot be blank")
@@ -37,9 +43,9 @@ public class CompanyEntity {
     @URL(message = "invalid URL format")
     private String logoUrl;
 
-    @NotNull(message = "latitude cannot be null") @Size(min = -90, max = 90)
+    @NotNull(message = "latitude cannot be null")
     private Double latitude;
-    @NotNull(message = "longitude cannot be null") @Size(min = -180, max = 180)
+    @NotNull(message = "longitude cannot be null")
     private Double longitude;
     @NotNull
     private boolean isActive;

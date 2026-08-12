@@ -1,4 +1,4 @@
-package com.example.iksystem;
+package com.example.iksystem.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

@@ -1,8 +1,7 @@
-package com.example.iksystem;
+package com.example.iksystem.DateRange;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.validation.*;
 
 public class DateRangeValidator implements ConstraintValidator<ValideDateRange, Object> {
 

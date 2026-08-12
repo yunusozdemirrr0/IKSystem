@@ -1,4 +1,4 @@
-package com.example.iksystem;
+package com.example.iksystem.service;
 import com.example.iksystem.dto.protocol.ProtocolCreateDto;
 import com.example.iksystem.dto.protocol.ProtocolResponseDto;
 import com.example.iksystem.dto.protocol.ProtocolUpdateDto;

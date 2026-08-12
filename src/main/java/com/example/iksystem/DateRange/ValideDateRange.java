@@ -1,4 +1,4 @@
-package com.example.iksystem;
+package com.example.iksystem.DateRange;
 
 import jakarta.validation.Constraint;
 

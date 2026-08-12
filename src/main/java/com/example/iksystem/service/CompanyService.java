@@ -1,4 +1,4 @@
-package com.example.iksystem;
+package com.example.iksystem.service;
 
 import com.example.iksystem.dto.company.CompanyCreateDto;
 import com.example.iksystem.dto.company.CompanyResponseDto;

@@ -1,4 +1,4 @@
-package com.example.iksystem;
+package com.example.iksystem.repository;
 
 import com.example.iksystem.entity.CompanyEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

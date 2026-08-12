@@ -1,4 +1,4 @@
-package com.example.iksystem;
+package com.example.iksystem.service;
 
 import com.example.iksystem.dto.user.UserCreateDto;
 import com.example.iksystem.dto.user.UserResponseDto;

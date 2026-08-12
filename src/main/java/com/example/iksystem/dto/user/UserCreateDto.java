@@ -1,6 +1,5 @@
 package com.example.iksystem.dto.user;
 
-import com.example.iksystem.UsersEntity;
 import com.example.iksystem.enums.model.constant.Role;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
