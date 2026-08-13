@@ -3,6 +3,9 @@ package com.example.iksystem.exception;
 import lombok.*;
 
 import java.time.LocalDateTime;
+/**
+ * Bu sınıf Error Response Dto nesnesini temsil eder.
+ */
 
 @Data
 @Builder

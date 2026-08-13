@@ -8,10 +8,13 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Bu sınıf Protocol Attachment Response Dto nesnesini temsil eder.
+ */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class ProtocolAttachmentResponseDto {
 
     private UUID id;
@@ -19,7 +22,4 @@ public class ProtocolAttachmentResponseDto {
     private String fileName;
     private AttachmentType attachmentType;
     private Boolean showPersonel;
-
-
-
 }

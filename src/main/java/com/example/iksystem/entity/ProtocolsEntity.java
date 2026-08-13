@@ -1,17 +1,7 @@
 package com.example.iksystem.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.CascadeType;
+import com.example.iksystem.enums.model.constant.ProtocolStatus;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +11,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.List;
+/**
+ * Bu sınıf Protocols Entity nesnesini temsil eder.
+ */
 
 @Entity
 @Table(name = "protocols")
@@ -33,14 +26,20 @@ public class ProtocolsEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String title;
+    @Column(name = "discount_percentage")
     private Integer discountPercentage;
-    @Lob
-    @Column(name = "discount_info")
+
+    @Column(name = "discount_info", columnDefinition = "TEXT")
     private String discountDetailsText;
+    @Column(name = "special_conditions", columnDefinition = "TEXT")
     private String specialConditions;
+    @Column(name = "begin_date")
     private LocalDate beginDate;
+    @Column(name = "end_date")
     private LocalDate endDate;
-    private boolean protocolStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "protocol_status")
+    private ProtocolStatus protocolStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(referencedColumnName = "id",nullable = false)

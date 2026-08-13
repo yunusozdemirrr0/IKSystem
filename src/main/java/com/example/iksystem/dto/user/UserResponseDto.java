@@ -1,45 +1,48 @@
 package com.example.iksystem.dto.user;
 
+import com.example.iksystem.entity.UsersEntity;
 import com.example.iksystem.enums.model.constant.Role;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
+
+/**
+ * Bu sınıf User Response Dto nesnesini temsil eder.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class UserResponseDto {
-    @NotBlank(message = "Name and surname cannot be blank")
-    private String name_surname;
-    @Email(message = "Email should be valid")
+
+    private UUID id;
+
+    @JsonProperty("name_surname")
+    private String nameSurname;
+
     private String email;
 
     private Role role;
-    @NotNull(message = "isActive cannot be null")
-    private Boolean isActive;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
 
-    public static UserResponseDto fromUsersEntity(String name_surname, String email, Role role, Boolean isActive, UUID id) {
+    private Boolean isActive;
+
+    /**
+     * Entity nesnesini doğrudan Response DTO'ya dönüştüren yardımcı metot.
+     */
+    public static UserResponseDto fromEntity(UsersEntity entity) {
+        if (entity == null) {
+            return null;
+        }
         return UserResponseDto.builder()
-                .name_surname(name_surname)
-                .email(email)
-                .role(role)
-                .isActive(isActive)
-                .id(id)
+                .id(entity.getId())
+                .nameSurname(entity.getNameSurname())
+                .email(entity.getEmail())
+                .role(entity.getRole())
+                .isActive(entity.getIsActive())
                 .build();
     }
-
 }
-
-

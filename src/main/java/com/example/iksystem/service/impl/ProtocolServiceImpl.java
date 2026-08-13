@@ -15,7 +15,6 @@ import com.example.iksystem.repository.CompanyRepository;
 import com.example.iksystem.repository.ProtocolRepository;
 import com.example.iksystem.service.ProtocolService;
 import com.example.iksystem.specification.ProtocolSpecification;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Bu sınıf Protocol Service Impl nesnesini temsil eder.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,16 +54,19 @@ public class ProtocolServiceImpl implements ProtocolService {
 
         ProtocolsEntity protocolsEntity = ProtocolsEntity.builder()
                 .title(dto.getTitle())
-                .discountPercentage(dto.getDiscountPercent())
+                .discountPercentage(dto.getDiscountPercentage())
                 .discountDetailsText(dto.getDiscountDetailText())
                 .beginDate(dto.getBeginDate())
                 .endDate(dto.getEndDate())
-                .protocolStatus(dto.getStatus() == ProtocolStatus.ACTIVE)
+                .protocolStatus(dto.getProtocolStatus() != null ? dto.getProtocolStatus() : ProtocolStatus.ACTIVE)
                 .company(company)
                 .category(category)
                 .build();
 
         ProtocolsEntity savedEntity = protocolRepository.save(protocolsEntity);
+
+        // TODO: Dosya kaydetme servisi buraya entegre edilmeli (Örn: fileStorageService.saveProtocolFiles(savedEntity, files);)
+
         return mapToResponseDto(savedEntity);
     }
 
@@ -89,16 +94,19 @@ public class ProtocolServiceImpl implements ProtocolService {
         }
 
         existingProtocol.setTitle(dto.getTitle());
-        existingProtocol.setDiscountPercentage(dto.getDiscountPercent());
+        existingProtocol.setDiscountPercentage(dto.getDiscountPercentage());
         existingProtocol.setDiscountDetailsText(dto.getDiscountDetailText());
         existingProtocol.setBeginDate(newBeginDate);
         existingProtocol.setEndDate(newEndDate);
 
-        if (dto.getStatus() != null) {
-            existingProtocol.setProtocolStatus(dto.getStatus() == ProtocolStatus.ACTIVE);
+        if (dto.getProtocolStatus() != null) {
+            existingProtocol.setProtocolStatus(dto.getProtocolStatus());
         }
 
         ProtocolsEntity updatedEntity = protocolRepository.save(existingProtocol);
+
+        // TODO: Dosya güncelleme / ekleme servisi buraya entegre edilmeli
+
         return mapToResponseDto(updatedEntity);
     }
 
@@ -111,28 +119,16 @@ public class ProtocolServiceImpl implements ProtocolService {
         }
     }
 
-    private ProtocolResponseDto mapToResponseDto(ProtocolsEntity entity) {
-        return ProtocolResponseDto.builder()
-                .id(entity.getId())
-                .title(entity.getTitle())
-                .discountPercent(entity.getDiscountPercentage())
-                .discountDetailText(entity.getDiscountDetailsText())
-                .beginDate(entity.getBeginDate())
-                .endDate(entity.getEndDate())
-                .status(entity.isProtocolStatus() ? ProtocolStatus.ACTIVE : ProtocolStatus.PASSIVE)
-                .companyId(entity.getCompany() != null ? entity.getCompany().getId() : null)
-                .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
-                .build();
-    }
     @Override
     @Transactional
     public void toggleProtocolStatus(UUID id) {
         ProtocolsEntity existingProtocol = protocolRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Protocol not found with id: " + id));
 
-        existingProtocol.setProtocolStatus(!existingProtocol.isProtocolStatus());
+        existingProtocol.setProtocolStatus(
+                existingProtocol.getProtocolStatus() == ProtocolStatus.ACTIVE ? ProtocolStatus.PASSIVE : ProtocolStatus.ACTIVE
+        );
         protocolRepository.save(existingProtocol);
-
     }
 
     @Override
@@ -149,7 +145,6 @@ public class ProtocolServiceImpl implements ProtocolService {
 
         return protocolRepository.findAll(spec, pageable)
                 .map(this::convertToUserProtocolListDto);
-
     }
 
     @Override
@@ -157,49 +152,67 @@ public class ProtocolServiceImpl implements ProtocolService {
         ProtocolsEntity protocol = protocolRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Protocol not found with id: " + id));
 
-        if (!protocol.isProtocolStatus() || protocol.getEndDate().isBefore(LocalDate.now())) {
+        if (protocol.getProtocolStatus() != ProtocolStatus.ACTIVE || protocol.getEndDate().isBefore(LocalDate.now())) {
             throw new ResourceNotFoundException("Protocol is not active or has expired");
         }
 
         return convertToUserProtocolDetailDto(protocol);
-
     }
+
+    private ProtocolResponseDto mapToResponseDto(ProtocolsEntity entity) {
+        return ProtocolResponseDto.builder()
+                .id(entity.getId())
+                .title(entity.getTitle())
+                .discountPercentage(entity.getDiscountPercentage())
+                .discountDetailText(entity.getDiscountDetailsText())
+                .beginDate(entity.getBeginDate())
+                .endDate(entity.getEndDate())
+                .protocolStatus(entity.getProtocolStatus())
+                .companyId(entity.getCompany() != null ? entity.getCompany().getId() : null)
+                .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
+                .build();
+    }
+
     private UserProtocolListDto convertToUserProtocolListDto(ProtocolsEntity protocol) {
         return UserProtocolListDto.builder()
                 .id(protocol.getId())
                 .title(protocol.getTitle())
-                .companyName(protocol.getCompany().getCompanyName())
-                .categoryName(protocol.getCategory().getCategoryName())
-                .discountPercent(protocol.getDiscountPercentage())
-                .logoUrl(protocol.getCompany().getLogoUrl())
+                .companyName(protocol.getCompany() != null ? protocol.getCompany().getCompanyName() : null)
+                .categoryName(protocol.getCategory() != null ? protocol.getCategory().getCategoryName() : null)
+                .discountPercentage(protocol.getDiscountPercentage())
+                .logoUrl(protocol.getCompany() != null ? protocol.getCompany().getLogoUrl() : null)
                 .endDate(protocol.getEndDate())
                 .build();
     }
+
     private UserProtocolDetailDto convertToUserProtocolDetailDto(ProtocolsEntity protocol) {
         List<String> fileDownloadUrls = Collections.emptyList();
-        if(protocol.getProtocolFiles() != null && !protocol.getProtocolFiles().isEmpty()) {
+        if (protocol.getProtocolFiles() != null && !protocol.getProtocolFiles().isEmpty()) {
             fileDownloadUrls = protocol.getProtocolFiles().stream()
                     .map(file -> ServletUriComponentsBuilder.fromCurrentContextPath()
                             .path("/api/v1/admin/files/download/")
                             .path(file.getId().toString())
-                                    .toUriString())
+                            .toUriString())
+                    .toList();
+        }
 
-                            .toList();
-                }
-
+        String mapUrl = null;
+        if (protocol.getCompany() != null && protocol.getCompany().getLatitude() != null && protocol.getCompany().getLongitude() != null) {
+            mapUrl = protocol.getCompany().getLatitude() + "," + protocol.getCompany().getLongitude();
+        }
 
         return UserProtocolDetailDto.builder()
                 .id(protocol.getId())
                 .title(protocol.getTitle())
-                .companyName(protocol.getCompany().getCompanyName())
-                .categoryName(protocol.getCategory().getCategoryName())
-                .logoUrl(protocol.getCompany().getLogoUrl())
+                .companyName(protocol.getCompany() != null ? protocol.getCompany().getCompanyName() : null)
+                .categoryName(protocol.getCategory() != null ? protocol.getCategory().getCategoryName() : null)
+                .logoUrl(protocol.getCompany() != null ? protocol.getCompany().getLogoUrl() : null)
                 .discountDetailsText(protocol.getDiscountDetailsText())
                 .specialConditions(protocol.getSpecialConditions())
-                .companyPhone(protocol.getCompany().getTelephone())
-                .companyEmail(protocol.getCompany().getEmail())
-                .companyAddress(protocol.getCompany().getAddress())
-                .mapUrl(protocol.getCompany().getLatitude()+","+protocol.getCompany().getLongitude())
+                .telephone(protocol.getCompany() != null ? protocol.getCompany().getTelephone() : null)
+                .email(protocol.getCompany() != null ? protocol.getCompany().getEmail() : null)
+                .address(protocol.getCompany() != null ? protocol.getCompany().getAddress() : null)
+                .mapUrl(mapUrl)
                 .beginDate(protocol.getBeginDate())
                 .endDate(protocol.getEndDate())
                 .fileDownloadUrls(fileDownloadUrls)

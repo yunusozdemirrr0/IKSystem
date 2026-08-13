@@ -5,7 +5,6 @@ import com.example.iksystem.dto.user.UserResponseDto;
 import com.example.iksystem.dto.user.UserUpdateDto;
 import com.example.iksystem.entity.UsersEntity;
 import com.example.iksystem.enums.model.constant.Role;
-
 import com.example.iksystem.exception.AlreadyExistsException;
 import com.example.iksystem.exception.ResourceNotFoundException;
 import com.example.iksystem.repository.UserRepository;
@@ -17,80 +16,96 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Bu sınıf User Service Impl nesnesini temsil eder.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-
 public class UserServiceImpl implements UserService {
-    private final UserRepository userRepository;
 
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public UserResponseDto createUser(UserCreateDto dto) {
-        if(userRepository.existsByEmailIgnoreCase(dto.getEmail())) {
+        if (userRepository.existsByEmailIgnoreCase(dto.getEmail())) {
             throw new AlreadyExistsException("User with this email already exists");
         }
+
         UsersEntity usersEntity = UsersEntity.builder()
-                .nameSurname(dto.getName_surname())
+                .nameSurname(dto.getNameSurname())
                 .email(dto.getEmail())
                 .role(dto.getRole())
-                .isActive(true)
+                .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
                 .build();
+
         UsersEntity savedUser = userRepository.save(usersEntity);
         return mapToUserResponseDto(savedUser);
     }
 
-
-
-
     @Override
     @Transactional
     public UserResponseDto updateUser(UUID id, UserUpdateDto dto) {
-        UsersEntity user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UsersEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         if (userRepository.existsByEmailIgnoreCaseAndIdNot(dto.getEmail(), id)) {
             throw new AlreadyExistsException("User with this email already exists");
         }
-        user.setNameSurname(dto.getName_surname());
+
+        user.setNameSurname(dto.getNameSurname());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
+
+        if (dto.getIsActive() != null) {
+            user.setIsActive(dto.getIsActive());
+        }
+
         UsersEntity updatedUser = userRepository.save(user);
         return mapToUserResponseDto(updatedUser);
     }
+
     @Override
     public UserResponseDto getUserById(UUID id) {
-        UsersEntity user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UsersEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return mapToUserResponseDto(user);
     }
 
     @Override
     public List<UserResponseDto> getAllUsers() {
-        return userRepository.findAll().stream().map(this::mapToUserResponseDto).toList();
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToUserResponseDto)
+                .toList();
     }
 
     @Override
     public List<UserResponseDto> getUsersByRole(Role role) {
-        return userRepository.findAllByRole(role).stream().map(this::mapToUserResponseDto).toList();
+        return userRepository.findAllByRole(role)
+                .stream()
+                .map(this::mapToUserResponseDto)
+                .toList();
     }
-
 
     @Override
     @Transactional
     public void toggleUserStatus(UUID id) {
-        UsersEntity user = userRepository.findById(id).
-                orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        user.setActive(!user.isActive());
+        UsersEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        user.setIsActive(!user.getIsActive());
         userRepository.save(user);
     }
+
     private UserResponseDto mapToUserResponseDto(UsersEntity user) {
         return UserResponseDto.builder()
                 .id(user.getId())
-                .name_surname(user.getNameSurname())
+                .nameSurname(user.getNameSurname())
                 .email(user.getEmail())
                 .role(user.getRole())
-                .isActive(user.isActive())
+                .isActive(user.getIsActive())
                 .build();
-
     }
 }

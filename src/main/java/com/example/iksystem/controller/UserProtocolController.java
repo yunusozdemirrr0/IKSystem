@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+/**
+ * Bu sınıf User Protocol Controller nesnesini temsil eder.
+ */
 
 @RestController
 @RequestMapping("/api/v1/protocols")
@@ -20,15 +23,18 @@ import java.util.UUID;
 public class UserProtocolController {
     private final ProtocolService protocolService;
 
+    /// Bu metod, kullanıcı için aktif protokolleri sayfalama ile HTTP GET isteğini işler.
     @GetMapping()
     public ResponseEntity<Page<UserProtocolListDto>> getActiveProtocolsForUser(@RequestParam(required = false) String search,
                                                                                @RequestParam(required = false) UUID categoryId, Pageable pageable) {
+        // Kullanıcı için aktif protokolleri arama ve kategoriye göre filtreleme ile sayfalama yaparak getirir.
         Page<UserProtocolListDto> protocols = protocolService.getActiveProtocolsForUser(search, categoryId, pageable);
         return ResponseEntity.ok(protocols);
     }
 
+    /// Bu metod, bir kullanıcı için belirli bir protokolün detaylarını getirmek için HTTP GET isteğini işler.
     @GetMapping("/{id}")
-    @Operation(summary = "Get protocol detail for user", description = "Retrieve the details of a specific protocol for a user by its ID.")
+    @Operation(summary = "Get protocol detail for user", description = "Retrieve the details of a specific protocol for a user by its ID.") // Swagger/OpenAPI açıklaması
     public ResponseEntity<UserProtocolDetailDto> getProtocolDetailForUser(@PathVariable UUID id) {
         UserProtocolDetailDto protocol = protocolService.getProtocolDetailForUser(id);
         return ResponseEntity.ok(protocol);

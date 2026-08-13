@@ -1,6 +1,7 @@
 package com.example.iksystem.dto.protocol;
 
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
+import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,9 @@ import java.time.LocalDate;
 
 import java.util.List;
 import java.util.UUID;
+/**
+ * Bu sınıf Protocol Create Dto nesnesini temsil eder.
+ */
 
 @Data
 @AllArgsConstructor
@@ -31,7 +35,7 @@ public class ProtocolCreateDto {
     private String title;
     @Min(value = 0, message = "discountPercent must be greater than or equal to 0")
     @Max(value = 100, message = "discountPercent must be less than or equal to 100")
-    private Integer discountPercent;
+    private Integer discountPercentage;
     @NotBlank
     private String discountDetailText;
     @NotNull
@@ -41,9 +45,9 @@ public class ProtocolCreateDto {
     @FutureOrPresent
     private LocalDate endDate;
     @NotNull
-    private ProtocolStatus status;
+    private ProtocolStatus protocolStatus;
+    private String specialConditions;
+    private List<ProtocolAttachmentDto> protocolFiles;
 
 
 }
-
-

@@ -10,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
+/**
+ * Bu arayüz Protocol Service davranışlarını tanımlar.
+ */
 
 public interface ProtocolService {
     ProtocolResponseDto createProtocol(ProtocolCreateDto protocolCreateDto, List<MultipartFile> files);

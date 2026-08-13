@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+/**
+ * Bu sınıf Error Details Dto nesnesini temsil eder.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

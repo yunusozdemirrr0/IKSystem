@@ -12,6 +12,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import java.util.List;
+/**
+ * Bu sınıf Protocol Update Dto nesnesini temsil eder.
+ */
 @ValideDateRange(startDateField = "beginDate", endDateField = "endDate")
 @Data
 @NoArgsConstructor
@@ -28,9 +31,9 @@ public class ProtocolUpdateDto {
 
     @NotBlank(message = "title cannot be blank")
     private String title;
-    @Min(value = 0, message = "discountPercent must be greater than or equal to 0")
-    @Max(value = 100, message = "discountPercent must be less than or equal to 100")
-    private Integer discountPercent;
+    @Min(value = 0, message = "discountPercentage must be greater than or equal to 0")
+    @Max(value = 100, message = "discountPercentage must be less than or equal to 100")
+    private Integer discountPercentage;
     @NotBlank
     private String discountDetailText;
     @NotNull
@@ -40,5 +43,8 @@ public class ProtocolUpdateDto {
     @FutureOrPresent
     private LocalDate endDate;
     @NotNull
-    private ProtocolStatus status;
+    private ProtocolStatus protocolStatus;
+    private String specialConditions;
+    private List<ProtocolAttachmentDto> protocolFiles;
+
 }

@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.UUID;
+/**
+ * Bu sınıf User Protocol List Dto nesnesini temsil eder.
+ */
 
 @Getter
 @Builder
@@ -17,7 +20,12 @@ public class UserProtocolListDto {
     private String title;
     private String companyName;
     private String categoryName;
-    private Integer discountPercent;
+    private Integer discountPercentage;
     private String logoUrl;
     private LocalDate endDate;
+    private Boolean protocolStatus;
+    private LocalDate beginDate;
+    private String discountDetailsText;
+    private String specialConditions;
+
 }

@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+/**
+ * Bu sınıf Protocol Response Dto nesnesini temsil eder.
+ */
 
 @Data
 @Builder
@@ -21,12 +24,13 @@ public class ProtocolResponseDto {
     private UUID categoryId;
     private String categoryName;
     private String title;
-    private Integer discountPercent;
+    private Integer discountPercentage;
     private String discountDetailText;
     private String specialConditions;
     private LocalDate beginDate;
     private LocalDate endDate;
-    private ProtocolStatus status;
+    private ProtocolStatus protocolStatus;
     private List<ProtocolAttachmentResponseDto> attachments;
+    private List<ProtocolAttachmentResponseDto> protocolFiles;
 
 }

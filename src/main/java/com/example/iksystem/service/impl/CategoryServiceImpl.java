@@ -14,17 +14,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+/**
+ * Bu sınıf Category Service Impl nesnesini temsil eder.
+ */
 
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(readOnly = true) // Sınıf düzeyinde varsayılan olarak tüm yöntemler için okuma işlemi yapılacağını belirtir.
 public  class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
 
     @Transactional
     @Override
+    // Bu metod, yeni bir kategori oluşturur.
     public CategoryResponseDto createCategory(CategoryCreateDto dto) {
         if (categoryRepository.existsByCategoryNameIgnoreCase(dto.getCategoryName())) {
             throw new AlreadyExistsException("Category already exists!");
@@ -35,6 +39,8 @@ public  class CategoryServiceImpl implements CategoryService {
                 .isActive(true)
                 .build();
         CategoriesEntity savedCategory = categoryRepository.save(categoriesEntity);
+
+        // Yeni oluşturulan kategoriyi CategoryResponseDto nesnesine dönüştürerek döndürür.
         return CategoryResponseDto.builder()
                 .id(savedCategory.getId())
                 .categoryName(savedCategory.getCategoryName())
@@ -48,6 +54,8 @@ public  class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+
+    // Bu metod, verilen ID'ye sahip kategoriyi getirir.
     public CategoryResponseDto getCategoryById(UUID id) {
         CategoriesEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
         return CategoryResponseDto.builder()
@@ -59,6 +67,7 @@ public  class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    // Bu metod, tüm kategorileri getirir.
     public List<CategoryResponseDto> getAllCategories() {
         List<CategoriesEntity> categories = categoryRepository.findAll();
         return categories.stream().map(category -> CategoryResponseDto.builder()
@@ -70,9 +79,10 @@ public  class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    // Bu metod, aktif kategorileri getirir.
     public List<CategoryResponseDto> getActiveCategories() {
         List<CategoriesEntity> categories = categoryRepository.findAllByIsActiveTrue();
-        return categories.stream().map(category -> CategoryResponseDto.builder()
+        return categories.stream().map(category -> CategoryResponseDto.builder() // Her bir kategori için CategoryResponseDto nesnesi oluşturur.
                 .id(category.getId())
                 .categoryName(category.getCategoryName())
                 .icon(category.getIcon())
@@ -82,6 +92,7 @@ public  class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    // Bu metod, verilen ID'ye sahip kategoriyi etkinleştirir veya devre dışı bırakır.
     public void toggleCategoryStatus(UUID id) {
         CategoriesEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
         category.setIsActive(!category.getIsActive());
@@ -89,6 +100,7 @@ public  class CategoryServiceImpl implements CategoryService {
     }
     @Transactional
     @Override
+    // Bu metod, verilen ID'ye sahip kategoriyi günceller.
     public CategoryResponseDto updateCategory(UUID id, CategoryUpdateDto dto) {
         CategoriesEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
         if (categoryRepository.existsByCategoryNameIgnoreCaseAndIdNot(dto.getCategoryName(), id)) {
@@ -107,4 +119,3 @@ public  class CategoryServiceImpl implements CategoryService {
     }
 
 }
-

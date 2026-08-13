@@ -2,6 +2,9 @@ package com.example.iksystem.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+/**
+ * Bu sınıf File Storage Exception nesnesini temsil eder.
+ */
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class FileStorageException extends RuntimeException {
