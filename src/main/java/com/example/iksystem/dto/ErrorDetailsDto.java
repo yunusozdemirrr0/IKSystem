@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * Bu sınıf Error Details Dto nesnesini temsil eder.
  */
@@ -20,6 +22,7 @@ public class ErrorDetailsDto {
     private LocalDateTime timestamp;
     private String details;
     private Integer status;
+    private List<String> validationErrors;
 
 
 

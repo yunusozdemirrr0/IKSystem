@@ -47,7 +47,6 @@ public class ProtocolCreateDto {
     @NotNull
     private ProtocolStatus protocolStatus;
     private String specialConditions;
-    private List<ProtocolAttachmentDto> protocolFiles;
 
 
 }

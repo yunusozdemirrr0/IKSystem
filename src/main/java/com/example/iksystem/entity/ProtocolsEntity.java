@@ -39,7 +39,7 @@ public class ProtocolsEntity {
     private LocalDate endDate;
     @Enumerated(EnumType.STRING)
     @Column(name = "protocol_status")
-    private ProtocolStatus protocolStatus;
+    private ProtocolStatus protocolStatus=ProtocolStatus.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(referencedColumnName = "id",nullable = false)

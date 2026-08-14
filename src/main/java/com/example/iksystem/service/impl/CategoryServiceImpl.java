@@ -14,108 +14,101 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+
 /**
  * Bu sınıf Category Service Impl nesnesini temsil eder.
  */
-
-
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // Sınıf düzeyinde varsayılan olarak tüm yöntemler için okuma işlemi yapılacağını belirtir.
-public  class CategoryServiceImpl implements CategoryService {
-    private final CategoryRepository categoryRepository;
+@Transactional(readOnly = true)
+public class CategoryServiceImpl implements CategoryService {
 
+    private final CategoryRepository categoryRepository;
 
     @Transactional
     @Override
-    // Bu metod, yeni bir kategori oluşturur.
     public CategoryResponseDto createCategory(CategoryCreateDto dto) {
-        if (categoryRepository.existsByCategoryNameIgnoreCase(dto.getCategoryName())) {
-            throw new AlreadyExistsException("Category already exists!");
+        // Yalnızca aynı ada sahip AKTİF bir kategori varsa hata fırlatır
+        if (categoryRepository.existsByCategoryNameIgnoreCaseAndIsActiveTrue(dto.getCategoryName())) {
+            throw new AlreadyExistsException("Active category with this name already exists!");
         }
+
         CategoriesEntity categoriesEntity = CategoriesEntity.builder()
                 .icon(dto.getIcon())
                 .categoryName(dto.getCategoryName())
                 .isActive(true)
                 .build();
+
         CategoriesEntity savedCategory = categoryRepository.save(categoriesEntity);
+        return mapToResponseDto(savedCategory);
+    }
 
-        // Yeni oluşturulan kategoriyi CategoryResponseDto nesnesine dönüştürerek döndürür.
-        return CategoryResponseDto.builder()
-                .id(savedCategory.getId())
-                .categoryName(savedCategory.getCategoryName())
-                .icon(savedCategory.getIcon())
-                .isActive(savedCategory.getIsActive())
-                .build();
+    @Override
+    public CategoryResponseDto getCategoryById(UUID id) {
+        CategoriesEntity category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
+        return mapToResponseDto(category);
+    }
 
+    @Override
+    public List<CategoryResponseDto> getAllCategories() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(this::mapToResponseDto)
+                .toList();
+    }
 
+    @Override
+    public List<CategoryResponseDto> getActiveCategories() {
+        return categoryRepository.findAllByIsActiveTrue()
+                .stream()
+                .map(this::mapToResponseDto)
+                .toList();
+    }
 
+    @Transactional
+    @Override
+    public void toggleCategoryStatus(UUID id) {
+        CategoriesEntity category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
+
+        // Pasiften aktife çekerken aynı ada sahip başka aktif kategori var mı kontrolü
+        if (!category.getIsActive() && categoryRepository.existsByCategoryNameIgnoreCaseAndIsActiveTrueAndIdNot(category.getCategoryName(), id)) {
+            throw new AlreadyExistsException("Cannot activate category. Another active category with this name already exists!");
         }
 
-    @Override
-    @Transactional
-
-    // Bu metod, verilen ID'ye sahip kategoriyi getirir.
-    public CategoryResponseDto getCategoryById(UUID id) {
-        CategoriesEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
-        return CategoryResponseDto.builder()
-                .id(category.getId())
-                .categoryName(category.getCategoryName())
-                .icon(category.getIcon())
-                .isActive(category.getIsActive())
-                .build();
-    }
-
-    @Override
-    // Bu metod, tüm kategorileri getirir.
-    public List<CategoryResponseDto> getAllCategories() {
-        List<CategoriesEntity> categories = categoryRepository.findAll();
-        return categories.stream().map(category -> CategoryResponseDto.builder()
-                .id(category.getId())
-                .categoryName(category.getCategoryName())
-                .icon(category.getIcon())
-                .isActive(category.getIsActive())
-                .build()).toList();
-    }
-
-    @Override
-    // Bu metod, aktif kategorileri getirir.
-    public List<CategoryResponseDto> getActiveCategories() {
-        List<CategoriesEntity> categories = categoryRepository.findAllByIsActiveTrue();
-        return categories.stream().map(category -> CategoryResponseDto.builder() // Her bir kategori için CategoryResponseDto nesnesi oluşturur.
-                .id(category.getId())
-                .categoryName(category.getCategoryName())
-                .icon(category.getIcon())
-                .isActive(category.getIsActive())
-                .build()).toList();
-    }
-
-    @Override
-    @Transactional
-    // Bu metod, verilen ID'ye sahip kategoriyi etkinleştirir veya devre dışı bırakır.
-    public void toggleCategoryStatus(UUID id) {
-        CategoriesEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
         category.setIsActive(!category.getIsActive());
         categoryRepository.save(category);
     }
+
     @Transactional
     @Override
-    // Bu metod, verilen ID'ye sahip kategoriyi günceller.
     public CategoryResponseDto updateCategory(UUID id, CategoryUpdateDto dto) {
-        CategoriesEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
-        if (categoryRepository.existsByCategoryNameIgnoreCaseAndIdNot(dto.getCategoryName(), id)) {
-            throw new AlreadyExistsException("Category already exists!");
+        CategoriesEntity category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
+
+        // Eğer güncellenen kategori aktif olarak kalacaksa/olacaksa ve aynı ada sahip başka aktif kategori varsa hata fırlatır
+        boolean targetIsActive = dto.getIsActive() != null ? dto.getIsActive() : category.getIsActive();
+        if (targetIsActive && categoryRepository.existsByCategoryNameIgnoreCaseAndIsActiveTrueAndIdNot(dto.getCategoryName(), id)) {
+            throw new AlreadyExistsException("Active category with this name already exists!");
         }
+
         category.setCategoryName(dto.getCategoryName());
         category.setIcon(dto.getIcon());
-        category.setIsActive(dto.getIsActive());
+        if (dto.getIsActive() != null) {
+            category.setIsActive(dto.getIsActive());
+        }
+
         CategoriesEntity updatedCategory = categoryRepository.save(category);
-        return CategoryResponseDto.builder()
-                .id(updatedCategory.getId())
-                .categoryName(updatedCategory.getCategoryName())
-                .icon(updatedCategory.getIcon())
-                .isActive(updatedCategory.getIsActive())
-                .build();
+        return mapToResponseDto(updatedCategory);
     }
 
+    private CategoryResponseDto mapToResponseDto(CategoriesEntity category) {
+        return CategoryResponseDto.builder()
+                .id(category.getId())
+                .categoryName(category.getCategoryName())
+                .icon(category.getIcon())
+                .isActive(category.getIsActive())
+                .build();
+    }
 }
