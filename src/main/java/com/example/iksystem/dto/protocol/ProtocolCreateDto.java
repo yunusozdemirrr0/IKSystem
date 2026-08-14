@@ -24,7 +24,9 @@ public class ProtocolCreateDto {
     @NotNull
     @Valid
     private List<ProtocolAttachmentDto> attachments;
-
+    private String fileName;
+    private String fileType;
+    private
 
 
     @NotNull(message = "companyId cannot be null")

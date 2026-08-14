@@ -14,6 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProtocolAttachmentDto {
+   private String fileName;
     @NotBlank(message = "fileUrl cannot be blank") @URL(message = "fileUrl must be a valid URL")
     private String filePathUrl;
     @NotNull(message = "attachmentType cannot be null")

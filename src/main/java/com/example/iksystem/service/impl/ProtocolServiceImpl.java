@@ -1,5 +1,6 @@
 package com.example.iksystem.service.impl;
 
+import com.example.iksystem.dto.protocol.ProtocolAttachmentResponseDto;
 import com.example.iksystem.dto.protocol.ProtocolCreateDto;
 import com.example.iksystem.dto.protocol.ProtocolResponseDto;
 import com.example.iksystem.dto.protocol.ProtocolUpdateDto;
@@ -7,6 +8,7 @@ import com.example.iksystem.dto.user.UserProtocolDetailDto;
 import com.example.iksystem.dto.user.UserProtocolListDto;
 import com.example.iksystem.entity.CategoriesEntity;
 import com.example.iksystem.entity.CompanyEntity;
+import com.example.iksystem.entity.ProtocolAttachmentEntity;
 import com.example.iksystem.entity.ProtocolsEntity;
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
 import com.example.iksystem.exception.ResourceNotFoundException;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -56,17 +59,30 @@ public class ProtocolServiceImpl implements ProtocolService {
                 .title(dto.getTitle())
                 .discountPercentage(dto.getDiscountPercentage())
                 .discountDetailsText(dto.getDiscountDetailText())
+                .specialConditions(dto.getSpecialConditions())
                 .beginDate(dto.getBeginDate())
                 .endDate(dto.getEndDate())
                 .protocolStatus(dto.getProtocolStatus() != null ? dto.getProtocolStatus() : ProtocolStatus.ACTIVE)
                 .company(company)
                 .category(category)
+                .protocolFiles(new ArrayList<>())
                 .build();
 
+        if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
+            List<ProtocolAttachmentEntity> attachmentEntities = dto.getAttachments().stream()
+                    .map(attDto -> ProtocolAttachmentEntity.builder()
+                            .filePathUrl(attDto.getFilePathUrl())
+                            .fileName(attDto.getFileName() != null ? attDto.getFileName() : "ek-dosya")
+                            .attachmentType(attDto.getAttachmentType())
+                            .showPersonel(attDto.getShowPersonel() != null ? attDto.getShowPersonel() : false)
+                            .protocol(protocolsEntity)
+                            .build())
+                    .toList();
+
+            protocolsEntity.getProtocolFiles().addAll(attachmentEntities);
+        }
+
         ProtocolsEntity savedEntity = protocolRepository.save(protocolsEntity);
-
-        // TODO: Dosya kaydetme servisi buraya entegre edilmeli (Örn: fileStorageService.saveProtocolFiles(savedEntity, files);)
-
         return mapToResponseDto(savedEntity);
     }
 
@@ -96,6 +112,7 @@ public class ProtocolServiceImpl implements ProtocolService {
         existingProtocol.setTitle(dto.getTitle());
         existingProtocol.setDiscountPercentage(dto.getDiscountPercentage());
         existingProtocol.setDiscountDetailsText(dto.getDiscountDetailText());
+        existingProtocol.setSpecialConditions(dto.getSpecialConditions());
         existingProtocol.setBeginDate(newBeginDate);
         existingProtocol.setEndDate(newEndDate);
 
@@ -103,10 +120,22 @@ public class ProtocolServiceImpl implements ProtocolService {
             existingProtocol.setProtocolStatus(dto.getProtocolStatus());
         }
 
+        if (dto.getAttachments() != null) {
+            existingProtocol.getProtocolFiles().clear();
+            List<ProtocolAttachmentEntity> updatedAttachments = dto.getAttachments().stream()
+                    .map(attDto -> ProtocolAttachmentEntity.builder()
+                            .filePathUrl(attDto.getFilePathUrl())
+                            .fileName(attDto.getFileName() != null ? attDto.getFileName() : "ek-dosya")
+                            .attachmentType(attDto.getAttachmentType())
+                            .showPersonel(attDto.getShowPersonel() != null ? attDto.getShowPersonel() : false)
+                            .protocol(existingProtocol)
+                            .build())
+                    .toList();
+
+            existingProtocol.getProtocolFiles().addAll(updatedAttachments);
+        }
+
         ProtocolsEntity updatedEntity = protocolRepository.save(existingProtocol);
-
-        // TODO: Dosya güncelleme / ekleme servisi buraya entegre edilmeli
-
         return mapToResponseDto(updatedEntity);
     }
 
@@ -160,16 +189,32 @@ public class ProtocolServiceImpl implements ProtocolService {
     }
 
     private ProtocolResponseDto mapToResponseDto(ProtocolsEntity entity) {
+        List<ProtocolAttachmentResponseDto> attachmentDtos = Collections.emptyList();
+
+        if (entity.getProtocolFiles() != null && !entity.getProtocolFiles().isEmpty()) {
+            attachmentDtos = entity.getProtocolFiles().stream()
+                    .map(att -> ProtocolAttachmentResponseDto.builder()
+                            .id(att.getId())
+                            .fileUrl(att.getFilePathUrl())
+                            .fileName(att.getFileName())
+                            .attachmentType(att.getAttachmentType())
+                            .showPersonel(att.getShowPersonel())
+                            .build())
+                    .toList();
+        }
+
         return ProtocolResponseDto.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
                 .discountPercentage(entity.getDiscountPercentage())
                 .discountDetailText(entity.getDiscountDetailsText())
+                .specialConditions(entity.getSpecialConditions())
                 .beginDate(entity.getBeginDate())
                 .endDate(entity.getEndDate())
                 .protocolStatus(entity.getProtocolStatus())
                 .companyId(entity.getCompany() != null ? entity.getCompany().getId() : null)
                 .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
+                .attachments(attachmentDtos)
                 .build();
     }
 
@@ -189,6 +234,7 @@ public class ProtocolServiceImpl implements ProtocolService {
         List<String> fileDownloadUrls = Collections.emptyList();
         if (protocol.getProtocolFiles() != null && !protocol.getProtocolFiles().isEmpty()) {
             fileDownloadUrls = protocol.getProtocolFiles().stream()
+                    .filter(att -> Boolean.TRUE.equals(att.getShowPersonel()))
                     .map(file -> ServletUriComponentsBuilder.fromCurrentContextPath()
                             .path("/api/v1/admin/files/download/")
                             .path(file.getId().toString())
