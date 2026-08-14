@@ -70,7 +70,7 @@ public class ProtocolController {
     @Operation(summary = "Tüm protokolleri sayfalı olarak getirir")
     @GetMapping
     public ResponseEntity<Page<ProtocolResponseDto>> getAllProtocolsForAdmin(
-            @PageableDefault(size = 10, sort = "beginDate", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(page = 0, size = 100, sort = "title", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<ProtocolResponseDto> responses = protocolService.getAllProtocolsForAdmin(pageable);
         return ResponseEntity.ok(responses);

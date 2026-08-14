@@ -16,7 +16,7 @@ import java.util.List;
  */
 
 @Entity
-@Table(name = "protocols")
+@Table(name = "PROTOCOLS")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -18,4 +18,10 @@ public class CorsConfig implements org.springframework.web.servlet.config.annota
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
+    @Override
+    public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/uploads/**") // "/uploads/**" yoluna gelen istekleri yakalar.)
+                .addResourceLocations("file:uploads/"); // "uploads" klasörünü kaynak olarak belirtir.
+    }
+
 }

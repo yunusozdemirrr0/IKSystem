@@ -10,11 +10,13 @@ import com.example.iksystem.entity.CategoriesEntity;
 import com.example.iksystem.entity.CompanyEntity;
 import com.example.iksystem.entity.ProtocolAttachmentEntity;
 import com.example.iksystem.entity.ProtocolsEntity;
+import com.example.iksystem.enums.model.constant.AttachmentType;
 import com.example.iksystem.enums.model.constant.ProtocolStatus;
 import com.example.iksystem.exception.ResourceNotFoundException;
 import com.example.iksystem.repository.CategoryRepository;
 import com.example.iksystem.repository.CompanyRepository;
 import com.example.iksystem.repository.ProtocolRepository;
+import com.example.iksystem.service.FileStorageService;
 import com.example.iksystem.service.ProtocolService;
 import com.example.iksystem.specification.ProtocolSpecification;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,7 @@ public class ProtocolServiceImpl implements ProtocolService {
     private final ProtocolRepository protocolRepository;
     private final CompanyRepository companyRepository;
     private final CategoryRepository categoryRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -68,18 +71,39 @@ public class ProtocolServiceImpl implements ProtocolService {
                 .protocolFiles(new ArrayList<>())
                 .build();
 
+        // 1. JSON içinden gelen ekleri ekle
         if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
             List<ProtocolAttachmentEntity> attachmentEntities = dto.getAttachments().stream()
                     .map(attDto -> ProtocolAttachmentEntity.builder()
                             .filePathUrl(attDto.getFilePathUrl())
                             .fileName(attDto.getFileName() != null ? attDto.getFileName() : "ek-dosya")
                             .attachmentType(attDto.getAttachmentType())
-                            .showPersonel(attDto.getShowPersonel() != null ? attDto.getShowPersonel() : false)
+                            .showPersonel(attDto.getShowPersonel() != null ? attDto.getShowPersonel() : true)
                             .protocol(protocolsEntity)
                             .build())
                     .toList();
 
             protocolsEntity.getProtocolFiles().addAll(attachmentEntities);
+        }
+
+        // 2. Multipart ile yüklenen fiziksel dosyaları diske kaydet
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    String storedFileName = fileStorageService.storeFile(file);
+                    String fileDownloadUri = buildPublicFileUrl(storedFileName);
+
+                    ProtocolAttachmentEntity physicalAttachment = ProtocolAttachmentEntity.builder()
+                            .fileName(file.getOriginalFilename())
+                            .filePathUrl(fileDownloadUri)
+                            .attachmentType(AttachmentType.CAMPAIGN_POSTER)
+                            .showPersonel(true)
+                            .protocol(protocolsEntity)
+                            .build();
+
+                    protocolsEntity.getProtocolFiles().add(physicalAttachment);
+                }
+            }
         }
 
         ProtocolsEntity savedEntity = protocolRepository.save(protocolsEntity);
@@ -120,6 +144,7 @@ public class ProtocolServiceImpl implements ProtocolService {
             existingProtocol.setProtocolStatus(dto.getProtocolStatus());
         }
 
+        // DTO'dan yeni ekler geldiyse listeyi yenile
         if (dto.getAttachments() != null) {
             existingProtocol.getProtocolFiles().clear();
             List<ProtocolAttachmentEntity> updatedAttachments = dto.getAttachments().stream()
@@ -127,12 +152,32 @@ public class ProtocolServiceImpl implements ProtocolService {
                             .filePathUrl(attDto.getFilePathUrl())
                             .fileName(attDto.getFileName() != null ? attDto.getFileName() : "ek-dosya")
                             .attachmentType(attDto.getAttachmentType())
-                            .showPersonel(attDto.getShowPersonel() != null ? attDto.getShowPersonel() : false)
+                            .showPersonel(attDto.getShowPersonel() != null ? attDto.getShowPersonel() : true)
                             .protocol(existingProtocol)
                             .build())
                     .toList();
 
             existingProtocol.getProtocolFiles().addAll(updatedAttachments);
+        }
+
+        // Yeni yüklenen fiziksel dosyaları ekle
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    String storedFileName = fileStorageService.storeFile(file);
+                    String fileDownloadUri = buildPublicFileUrl(storedFileName);
+
+                    ProtocolAttachmentEntity physicalAttachment = ProtocolAttachmentEntity.builder()
+                            .fileName(file.getOriginalFilename())
+                            .filePathUrl(fileDownloadUri)
+                            .attachmentType(AttachmentType.CAMPAIGN_POSTER)
+                            .showPersonel(true)
+                            .protocol(existingProtocol)
+                            .build();
+
+                    existingProtocol.getProtocolFiles().add(physicalAttachment);
+                }
+            }
         }
 
         ProtocolsEntity updatedEntity = protocolRepository.save(existingProtocol);
@@ -213,12 +258,31 @@ public class ProtocolServiceImpl implements ProtocolService {
                 .endDate(entity.getEndDate())
                 .protocolStatus(entity.getProtocolStatus())
                 .companyId(entity.getCompany() != null ? entity.getCompany().getId() : null)
+                .companyName(entity.getCompany() != null ? entity.getCompany().getCompanyName() : null)
                 .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
+                .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
                 .attachments(attachmentDtos)
                 .build();
     }
 
     private UserProtocolListDto convertToUserProtocolListDto(ProtocolsEntity protocol) {
+        AttachmentType primaryAttachmentType = null;
+        String primaryFileUrl = null;
+
+        if (protocol.getProtocolFiles() != null && !protocol.getProtocolFiles().isEmpty()) {
+            // Personele açık ve sözleşme olmayan ilk afiş/broşürü bul
+            ProtocolAttachmentEntity primaryAttachment = protocol.getProtocolFiles().stream()
+                    .filter(att -> att.getShowPersonel() == null || Boolean.TRUE.equals(att.getShowPersonel()))
+                    .filter(att -> att.getAttachmentType() == AttachmentType.CAMPAIGN_POSTER || att.getAttachmentType() == AttachmentType.BROCHURE)
+                    .findFirst()
+                    .orElse(null);
+
+            if (primaryAttachment != null) {
+                primaryAttachmentType = primaryAttachment.getAttachmentType();
+                primaryFileUrl = buildPublicFileUrl(primaryAttachment.getFilePathUrl()); // Tam link üretilir
+            }
+        }
+
         return UserProtocolListDto.builder()
                 .id(protocol.getId())
                 .title(protocol.getTitle())
@@ -226,19 +290,42 @@ public class ProtocolServiceImpl implements ProtocolService {
                 .categoryName(protocol.getCategory() != null ? protocol.getCategory().getCategoryName() : null)
                 .discountPercentage(protocol.getDiscountPercentage())
                 .logoUrl(protocol.getCompany() != null ? protocol.getCompany().getLogoUrl() : null)
+                .beginDate(protocol.getBeginDate())
                 .endDate(protocol.getEndDate())
+                .discountDetailsText(protocol.getDiscountDetailsText())
+                .specialConditions(protocol.getSpecialConditions())
+                .protocolStatus(protocol.getProtocolStatus() == ProtocolStatus.ACTIVE)
+                .fileUrl(primaryFileUrl)
+                .attachmentType(primaryAttachmentType)
                 .build();
     }
 
     private UserProtocolDetailDto convertToUserProtocolDetailDto(ProtocolsEntity protocol) {
         List<String> fileDownloadUrls = Collections.emptyList();
+        List<ProtocolAttachmentResponseDto> userAttachments = Collections.emptyList();
+
         if (protocol.getProtocolFiles() != null && !protocol.getProtocolFiles().isEmpty()) {
-            fileDownloadUrls = protocol.getProtocolFiles().stream()
-                    .filter(att -> Boolean.TRUE.equals(att.getShowPersonel()))
-                    .map(file -> ServletUriComponentsBuilder.fromCurrentContextPath()
-                            .path("/api/v1/admin/files/download/")
-                            .path(file.getId().toString())
-                            .toUriString())
+            // Sadece personele açık olan ve SPECIAL_CONTRACTS OLMAYAN dosyaları al
+            List<ProtocolAttachmentEntity> allowedFiles = protocol.getProtocolFiles().stream()
+                    .filter(att -> att.getShowPersonel() == null || Boolean.TRUE.equals(att.getShowPersonel()))
+                    .filter(att -> att.getAttachmentType() == AttachmentType.CAMPAIGN_POSTER
+                            || att.getAttachmentType() == AttachmentType.BROCHURE)
+                    .toList();
+
+            // Dosya indirme / görüntüleme URL'leri
+            fileDownloadUrls = allowedFiles.stream()
+                    .map(att -> buildPublicFileUrl(att.getFilePathUrl()))
+                    .toList();
+
+            // Dosya detay listesi
+            userAttachments = allowedFiles.stream()
+                    .map(att -> ProtocolAttachmentResponseDto.builder()
+                            .id(att.getId())
+                            .fileUrl(buildPublicFileUrl(att.getFilePathUrl()))
+                            .fileName(att.getFileName())
+                            .attachmentType(att.getAttachmentType())
+                            .showPersonel(att.getShowPersonel())
+                            .build())
                     .toList();
         }
 
@@ -262,6 +349,37 @@ public class ProtocolServiceImpl implements ProtocolService {
                 .beginDate(protocol.getBeginDate())
                 .endDate(protocol.getEndDate())
                 .fileDownloadUrls(fileDownloadUrls)
+                .attachments(userAttachments)
                 .build();
+    }
+
+    /**
+     * Verilen dosya yolu ya da adı eğer ham link değilse,
+     * sisteme ait `/api/v1/files/download/...` tam URL'sine dönüştürür.
+     */
+    private String buildPublicFileUrl(String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return null;
+        }
+
+        // Zaten tam URL ise (harici kaynak) olduğu gibi dön
+        if (rawPath.startsWith("http://") || rawPath.startsWith("https://")) {
+            return rawPath;
+        }
+
+        // Eğer veritabanında eski admin linki olarak kalmışsa, doğru olanı ayıkla
+        if (rawPath.contains("/download/")) {
+            String fileName = rawPath.substring(rawPath.lastIndexOf("/download/") + 10);
+            return ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/api/v1/files/download/")
+                    .path(fileName)
+                    .toUriString();
+        }
+
+        // Sadece dosya adı olarak tutulmuşsa
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/files/download/")
+                .path(rawPath)
+                .toUriString();
     }
 }

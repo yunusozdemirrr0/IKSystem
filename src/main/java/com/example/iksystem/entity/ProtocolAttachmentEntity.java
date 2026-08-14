@@ -45,7 +45,7 @@ public class ProtocolAttachmentEntity {
     private String filePathUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "file_type", nullable = false)
+    @Column(name = "attachment_type", nullable = false)
     private AttachmentType attachmentType;
 
     @Builder.Default
